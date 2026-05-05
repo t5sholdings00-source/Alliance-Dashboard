@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>T5S Alliance · Dashboard</title>
+
+  <link rel="icon" type="image/png" href="assets/llogo nb.png"/>
+  <link rel="apple-touch-icon" href="assets/llogo nb.png"/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cormorant+SC:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_live_Y2xlcmsuYWxsaWFuY2Uud2VhcmV0NXMuY29tJA"
+    src="https://clerk.alliance.wearelvo.com/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+    /* Prevent iOS input zoom */
+    input,textarea,select{font-size:16px !important}
+
+    :root{
+      --purple:#7F77DD;--purple-dim:rgba(127,119,221,.18);--purple-hi:rgba(127,119,221,.42);
+      --purple-glow:rgba(127,119,221,.06);
+      --gold:#C8A96E;
+      --red-hi:#CC2020;
+      --bg:#000000;--bg2:#000000;--bg3:#000000;
+      --chrome:#C8C8D0;--white:#F0EEEC;--dim:#6A6A64;--dim2:#888880;
+      --border:rgba(127,119,221,.14);--border-hi:rgba(127,119,221,.38);
+      --sidebar:220px;
+      --bottom-nav:56px;
+    }
+    html,body{height:100%;overflow:hidden}
+    body{background:var(--bg);color:var(--white);font-family:'Cormorant Garamond',Georgia,serif;display:flex;flex-direction:column}
+    body::after{content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.028;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+    /* LOAD */
+    #loadScreen{position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transition:opacity .6s ease}
+    #loadScreen.out{opacity:0;pointer-events:none}
+    .ls-rule{width:1px;height:80px;background:linear-gradient(to bottom,transparent,var(--purple),transparent);animation:lsPulse 1.8s ease-in-out infinite}
+    @keyframes lsPulse{0%,100%{opacity:.3}50%{opacity:1}}
+    .ls-mark{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.6em;color:var(--purple);text-transform:uppercase}
+    .ls-name{font-family:'Cinzel',serif;font-size:2.8rem;font-weight:900;letter-spacing:.25em;color:var(--chrome);line-height:1}
+    .ls-sub{font-family:'Cormorant SC',serif;font-size:.48rem;letter-spacing:.5em;color:var(--dim2);text-transform:uppercase}
+    .ls-status{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;min-height:1em}
+    .ls-bar{width:200px;height:1px;background:var(--border);overflow:hidden;position:relative}
+    .ls-bar-fill{position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--purple),transparent);animation:lsBar 1.4s ease-in-out infinite}
+    @keyframes lsBar{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+
+    /* ERROR */
+    #errorScreen{position:fixed;inset:0;z-index:8999;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;padding:2rem;text-align:center}
+    #errorScreen.show{display:flex}
+    .err-title{font-family:'Cinzel',serif;font-size:1.2rem;letter-spacing:.2em;color:var(--red-hi)}
+    .err-msg{font-size:.95rem;font-style:italic;color:var(--dim2);max-width:480px;line-height:1.8}
+    .err-detail{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.25em;color:var(--dim);border:.5px solid var(--border);padding:.8rem 1.2rem;max-width:480px;word-break:break-all}
+
+    /* TOPBAR */
+    #topbar{height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 1.8rem;background:var(--bg);border-bottom:.5px solid var(--border);position:relative;z-index:100}
+    .tb-left{display:flex;align-items:center;gap:1.4rem}
+    .tb-mark{font-family:'Cinzel',serif;font-size:.78rem;font-weight:600;letter-spacing:.28em;color:var(--purple)}
+    .tb-divider{width:1px;height:18px;background:var(--border)}
+    .tb-crumb{font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.3em;color:var(--dim2);text-transform:uppercase}
+    .tb-right{display:flex;align-items:center;gap:1rem}
+    .tb-tier{font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.25em;color:var(--purple);border:.5px solid var(--border);padding:.22rem .6rem;text-transform:uppercase}
+    .tb-name{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.2em;color:var(--dim2);text-transform:uppercase}
+    #clerkBtn{display:flex;align-items:center}
+
+    /* SHELL */
+    #shell{flex:1;display:flex;overflow:hidden;position:relative;z-index:1}
+
+    /* SIDEBAR — desktop only */
+    #sidebar{width:var(--sidebar);flex-shrink:0;display:flex;flex-direction:column;background:var(--bg2);border-right:.5px solid var(--border);overflow-y:auto}
+    #sidebar::-webkit-scrollbar{width:2px}
+    #sidebar::-webkit-scrollbar-thumb{background:var(--border)}
+    .sb-section{padding:1.4rem 1rem .4rem}
+    .sb-label{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.45em;color:var(--dim);text-transform:uppercase;margin-bottom:.7rem;padding-left:.3rem}
+    .nav-item{display:flex;align-items:center;gap:.7rem;padding:.68rem .9rem;cursor:pointer;border-left:2px solid transparent;transition:all .2s;margin-bottom:1px}
+    .nav-item:hover{background:var(--purple-glow);border-left-color:rgba(127,119,221,.3)}
+    .nav-item.active{background:var(--purple-glow);border-left-color:var(--purple)}
+    .nav-ico{font-size:.7rem;opacity:.4;width:14px;flex-shrink:0;transition:opacity .2s}
+    .nav-item:hover .nav-ico,.nav-item.active .nav-ico{opacity:1}
+    .nav-lbl{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.22em;color:var(--dim2);text-transform:uppercase;transition:color .2s}
+    .nav-item:hover .nav-lbl{color:var(--chrome)}
+    .nav-item.active .nav-lbl{color:var(--purple)}
+    .nav-badge{margin-left:auto;font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.12em;color:var(--purple);background:rgba(127,119,221,.1);border:.5px solid var(--border);padding:.12rem .38rem}
+    .sb-foot{margin-top:auto;padding:1rem;border-top:.5px solid var(--border)}
+    .sb-back{font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.25em;color:var(--dim);text-decoration:none;text-transform:uppercase;transition:color .2s;display:block;padding:.4rem 0}
+    .sb-back:hover{color:var(--purple)}
+    .live-pip{display:flex;align-items:center;gap:.4rem;margin-top:.6rem}
+    .pip{width:4px;height:4px;border-radius:50%;background:var(--purple);animation:pipBlink 2.2s ease-in-out infinite}
+    @keyframes pipBlink{0%,100%{opacity:.25}50%{opacity:1}}
+    .pip-txt{font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+    .sb-status{font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;padding:.3rem 0;display:flex;align-items:center;gap:.4rem}
+    .sb-status.ok{color:var(--purple)}.sb-status.err{color:var(--red-hi)}
+
+    /* ── MOBILE BOTTOM NAV ── */
+    #bottomNav{
+      display:none;
+      position:fixed;bottom:0;left:0;right:0;
+      padding-bottom:calc(env(safe-area-inset-bottom) + 100px);
+      margin-bottom:-100px;
+      background:rgba(0,0,0,.96);
+      border-top:.5px solid var(--border);
+      z-index:200;
+      padding-left:.3rem;
+      padding-right:.3rem;
+    }
+    .bn-inner{
+      display:flex;
+      align-items:stretch;
+      height:var(--bottom-nav);
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      gap:0;
+    }
+    .bn-inner::-webkit-scrollbar{display:none}
+    .bn-item{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:.18rem;padding:.4rem .55rem;cursor:pointer;
+      min-width:52px;flex:1;
+      border-top:2px solid transparent;
+      transition:all .18s;
+      position:relative;
+    }
+    .bn-item.active{border-top-color:var(--purple)}
+    .bn-item.active .bn-ico{opacity:1;color:var(--purple)}
+    .bn-item.active .bn-lbl{color:var(--purple)}
+    .bn-ico{font-size:.72rem;opacity:.38;transition:all .18s;color:var(--chrome)}
+    .bn-lbl{font-family:'Cinzel',serif;font-size:.3rem;letter-spacing:.18em;color:var(--dim2);text-transform:uppercase;white-space:nowrap;transition:color .18s}
+    .bn-dot{position:absolute;top:.35rem;right:.35rem;width:5px;height:5px;border-radius:50%;background:var(--purple);display:none}
+    .bn-dot.show{display:block}
+
+    /* MAIN */
+    #main{flex:1;overflow-y:auto;padding:2.2rem 2.4rem 3rem;background:var(--bg)}
+    #main::-webkit-scrollbar{width:2px}
+    #main::-webkit-scrollbar-thumb{background:var(--border)}
+
+    /* PANELS */
+    .panel{display:none}.panel.active{display:block;animation:panelIn .3s cubic-bezier(.16,1,.3,1)}
+    @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    .ph{margin-bottom:2rem;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem}
+    .ph-left .ph-eyebrow{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.55em;color:var(--purple);text-transform:uppercase;margin-bottom:.35rem;opacity:.7}
+    .ph-left .ph-title{font-family:'Cinzel',serif;font-size:1.55rem;font-weight:900;letter-spacing:.12em;color:var(--chrome);line-height:1}
+    .ph-left .ph-sub{font-size:.92rem;font-weight:300;font-style:italic;color:var(--dim2);margin-top:.35rem}
+    .ph-rule{flex:1;height:.5px;background:linear-gradient(to right,var(--border-hi),transparent);margin-bottom:.4rem;min-width:40px}
+
+    .stat-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:2rem}
+    .sc{background:var(--bg2);padding:1.2rem 1.4rem;position:relative;overflow:hidden;transition:background .25s}
+    .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent);transform:scaleX(0);transition:transform .4s}
+    .sc:hover{background:var(--purple-glow)}.sc:hover::after{transform:scaleX(1)}
+    .sc-lbl{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.4em;color:var(--dim);text-transform:uppercase;margin-bottom:.4rem}
+    .sc-val{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600;letter-spacing:.1em;color:var(--chrome)}
+
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+    .g-full{margin-bottom:1.2rem}
+
+    .card{background:var(--bg2);border:.5px solid var(--border);position:relative}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+    .ch{padding:1rem 1.4rem;border-bottom:.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .ct{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.35em;color:var(--purple);text-transform:uppercase}
+    .cm{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+    .cb{padding:1.2rem 1.4rem}
+    .empty{font-size:.88rem;font-style:italic;color:var(--dim);padding:1.2rem 0;text-align:center}
+
+    /* DEAL */
+    .deal{padding:1.2rem 1.4rem;border-bottom:.5px solid var(--border);position:relative;transition:background .2s;will-change:background}
+    .deal:last-child{border-bottom:none}
+    .deal::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--purple);opacity:0;transition:opacity .2s;pointer-events:none}
+    .deal:hover{background:var(--purple-glow)}.deal:hover::before{opacity:1}
+    .deal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;gap:.8rem;flex-wrap:wrap}
+    .deal-name{font-family:'Cinzel',serif;font-size:.62rem;font-weight:600;letter-spacing:.14em;color:var(--chrome)}
+    .deal-st{font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.18em;padding:.18rem .5rem;text-transform:uppercase}
+    .deal-st.active{color:#22c55e;border:.5px solid rgba(34,197,94,.28);background:rgba(34,197,94,.05)}
+    .deal-st.pending{color:var(--gold);border:.5px solid rgba(200,169,110,.28);background:rgba(200,169,110,.05)}
+    .deal-st.closed{color:var(--dim);border:.5px solid rgba(100,100,95,.2)}
+    .deal-meta{display:flex;gap:1.4rem;flex-wrap:wrap}
+    .dm-lbl{font-family:'Cinzel',serif;font-size:.33rem;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;margin-bottom:.15rem}
+    .dm-val{font-size:.82rem;font-style:italic;color:var(--chrome)}
+    .deal-note{margin-top:.6rem;font-size:.8rem;font-style:italic;color:var(--dim2);line-height:1.6;border-top:.5px solid var(--border);padding-top:.55rem}
+
+    /* FINANCIALS */
+    .fin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:1.2rem}
+    .fgc{background:var(--bg2);padding:1.1rem 1.3rem}
+    .fg-lbl{font-family:'Cinzel',serif;font-size:.35rem;letter-spacing:.38em;color:var(--dim);text-transform:uppercase;margin-bottom:.35rem}
+    .fg-val{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--chrome)}
+    .ft{width:100%;border-collapse:collapse}
+    .ft th{font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;padding:.65rem 1rem;border-bottom:.5px solid var(--border);text-align:left;font-weight:400}
+    .ft td{padding:.85rem 1rem;border-bottom:.5px solid rgba(127,119,221,.05);font-size:.84rem;font-style:italic;color:var(--chrome)}
+    .ft tr:last-child td{border-bottom:none}
+    .ft tr:hover td{background:var(--purple-glow)}
+    .ft-lbl{font-family:'Cinzel',serif;font-size:.32rem;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;font-style:normal;display:block;margin-bottom:.18rem}
+
+    /* ANNOUNCEMENTS */
+    .ann{padding:1.2rem 1.4rem;border-bottom:.5px solid var(--border);transition:background .2s;position:relative}
+    .ann:last-child{border-bottom:none}
+    .ann:hover{background:var(--purple-glow)}
+    .ann.pinned{border-left:2px solid var(--purple);background:rgba(127,119,221,.03)}
+    .ann-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.55rem;gap:1rem;flex-wrap:wrap}
+    .ann-title{font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.12em;color:var(--chrome)}
+    .ann-div{font-family:'Cinzel',serif;font-size:.33rem;letter-spacing:.2em;color:var(--purple);border:.5px solid var(--border);padding:.15rem .45rem;flex-shrink:0;text-transform:uppercase}
+    .ann-body{font-size:.88rem;font-style:italic;color:var(--dim2);line-height:1.75}
+    .ann-ft{display:flex;justify-content:space-between;margin-top:.6rem;padding-top:.5rem;border-top:.5px solid var(--border);flex-wrap:wrap;gap:.4rem}
+    .ann-author{font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.2em;color:var(--dim)}
+    .ann-time{font-family:'Cinzel',serif;font-size:.32rem;letter-spacing:.15em;color:var(--dim);opacity:.55}
+    .ann-pin-badge{font-family:'Cinzel',serif;font-size:.32rem;letter-spacing:.2em;color:var(--purple);opacity:.75}
+    .fbar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+    .fb{background:transparent;border:.5px solid var(--border);color:var(--dim);font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.22em;padding:.42rem .75rem;cursor:pointer;text-transform:uppercase;transition:all .2s}
+    .fb:hover,.fb.active{border-color:var(--purple);color:var(--purple)}
+
+    /* TIERS */
+    .tier-section{margin-bottom:1.5rem}
+    .tier-row{display:flex;align-items:flex-start;gap:1.5rem;padding:1.2rem 1.4rem;border-bottom:.5px solid var(--border)}
+    .tier-row:last-child{border-bottom:none}
+    .tier-num{font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.3em;color:var(--purple);min-width:48px;padding-top:.2rem;flex-shrink:0}
+    .tier-title{font-family:'Cinzel',serif;font-size:.56rem;font-weight:600;letter-spacing:.18em;color:var(--chrome);margin-bottom:.3rem;text-transform:uppercase}
+    .tier-text{font-size:.84rem;font-weight:300;font-style:italic;line-height:1.8;color:var(--dim2)}
+
+    /* TASK LOG */
+    .task-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+    .task-panel{background:var(--bg2);border:.5px solid var(--border);position:relative;display:flex;flex-direction:column}
+    .task-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+    .tp-head{padding:1rem 1.4rem;border-bottom:.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+    .tp-title{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.35em;color:var(--purple);text-transform:uppercase}
+    .tp-sub{font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+    .tp-body{padding:1.2rem 1.4rem;flex:1;display:flex;flex-direction:column}
+
+    /* NOTEPAD */
+    .note-list{max-height:200px;overflow-y:auto;margin-bottom:.8rem;flex:1}
+    .note-list::-webkit-scrollbar{width:2px}
+    .note-list::-webkit-scrollbar-thumb{background:var(--border)}
+    .note-item{padding:.7rem 0;border-bottom:.5px solid var(--border)}
+    .note-item:last-child{border-bottom:none}
+    .note-meta{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.18em;color:var(--purple);opacity:.7;margin-bottom:.2rem;display:flex;gap:.6rem}
+    .note-author{color:var(--purple)}
+    .note-ts{color:var(--dim)}
+    .note-text{font-size:.84rem;font-style:italic;color:var(--chrome);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+    .note-del{background:none;border:none;color:var(--dim);font-size:.7rem;cursor:pointer;margin-left:auto;padding:0 .2rem;transition:color .2s;flex-shrink:0}
+    .note-del:hover{color:var(--red-hi)}
+    .note-compose{display:flex;flex-direction:column;gap:.5rem;flex-shrink:0}
+    .note-ta{background:transparent;border:.5px solid var(--border);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:.9rem;letter-spacing:.03em;padding:.7rem .9rem;outline:none;resize:none;min-height:60px;width:100%;line-height:1.5;transition:border-color .3s}
+    .note-ta::placeholder{color:var(--dim);font-style:italic}
+    .note-ta:focus{border-color:var(--purple)}
+    .note-post{background:transparent;border:.5px solid var(--purple);color:var(--purple);font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.3em;padding:.5rem .9rem;cursor:pointer;text-transform:uppercase;transition:background .25s,color .25s;align-self:flex-end}
+    .note-post:hover{background:var(--purple);color:var(--bg)}
+
+    /* FINANCE SNAP */
+    .snap-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+    .snap-cell{background:var(--bg2);padding:1rem 1.2rem}
+    .snap-lbl{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.32em;color:var(--dim);text-transform:uppercase;margin-bottom:.3rem}
+    .snap-val{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.1em;color:var(--chrome)}
+    .snap-sub{font-size:.78rem;font-style:italic;color:var(--dim);margin-top:.15rem}
+
+    /* CHAT */
+    .chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.7rem;min-height:180px;max-height:300px;margin-bottom:.8rem}
+    .chat-messages::-webkit-scrollbar{width:2px}
+    .chat-messages::-webkit-scrollbar-thumb{background:var(--border)}
+    .chat-msg{display:flex;flex-direction:column;gap:.18rem}
+    .chat-msg.user{align-items:flex-end}
+    .chat-msg.t5s{align-items:flex-start}
+    .chat-bubble{padding:.65rem 1rem;max-width:86%;font-size:.86rem;font-style:italic;line-height:1.6}
+    .chat-msg.user .chat-bubble{background:rgba(127,119,221,.1);border:.5px solid rgba(127,119,221,.28);color:var(--white)}
+    .chat-msg.t5s .chat-bubble{background:var(--bg3);border:.5px solid var(--border);color:var(--chrome)}
+    .chat-meta{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.18em;color:var(--dim)}
+    .chat-typing{display:none;align-items:center;gap:.4rem;padding:.3rem 0}
+    .chat-typing.show{display:flex}
+    .chat-typing span{font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.2em;color:var(--dim)}
+    .chat-dot{width:4px;height:4px;border-radius:50%;background:var(--purple);animation:chatPulse 1.2s ease-in-out infinite}
+    .chat-dot:nth-child(2){animation-delay:.2s}.chat-dot:nth-child(3){animation-delay:.4s}
+    @keyframes chatPulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+    .chat-compose{display:flex;gap:.5rem;align-items:flex-end;flex-shrink:0}
+    .chat-input{background:transparent;border:.5px solid var(--border);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:.9rem;letter-spacing:.03em;padding:.7rem .9rem;outline:none;flex:1;resize:none;min-height:38px;max-height:90px;line-height:1.5;transition:border-color .3s}
+    .chat-input::placeholder{color:var(--dim);font-style:italic}
+    .chat-input:focus{border-color:var(--purple)}
+    .chat-send{background:transparent;border:.5px solid var(--purple);color:var(--purple);font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.28em;padding:.7rem .85rem;cursor:pointer;text-transform:uppercase;transition:background .25s,color .25s;white-space:nowrap;flex-shrink:0}
+    .chat-send:hover{background:var(--purple);color:var(--bg)}
+    .chat-send:disabled{opacity:.38;cursor:not-allowed}
+
+    /* ACCOUNT */
+    .tier-band{display:flex;align-items:center;justify-content:space-between;border:.5px solid var(--border-hi);padding:1.3rem 1.6rem;margin-bottom:1.2rem;flex-wrap:wrap;gap:1rem;background:rgba(127,119,221,.025)}
+    .tb-tier-lbl{font-family:'Cinzel',serif;font-size:.35rem;letter-spacing:.38em;color:var(--dim);text-transform:uppercase;margin-bottom:.3rem}
+    .tb-tier-val{font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.18em;color:var(--purple)}
+    .tb-note{font-size:.82rem;font-style:italic;color:var(--dim);max-width:280px;line-height:1.6;text-align:right}
+    .ig{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:1.2rem}
+    .ic{background:var(--bg2);padding:1.3rem 1.4rem}
+    .ic-lbl{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.38em;color:var(--dim);text-transform:uppercase;margin-bottom:.45rem}
+    .ic-val{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;color:var(--chrome);word-break:break-word}
+    .adm-badge{display:inline-flex;align-items:center;gap:.5rem;border:.5px solid rgba(200,169,110,.35);padding:.28rem .7rem;margin-bottom:1rem}
+    .adm-badge span{font-family:'Cinzel',serif;font-size:.36rem;letter-spacing:.28em;color:var(--gold);text-transform:uppercase}
+    .locked-notice{background:var(--bg2);border:.5px solid var(--border);padding:2.5rem;text-align:center}
+    .ln-text{font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;line-height:1.9}
+    .ln-text span{color:var(--red-hi)}
+
+    /* ACTIVITY */
+    .act-list{max-height:260px;overflow-y:auto;padding:0 1.4rem}
+    .act-list::-webkit-scrollbar{width:2px}
+    .act-list::-webkit-scrollbar-thumb{background:var(--border)}
+    .act-item{display:flex;gap:1rem;padding:.75rem 0;border-bottom:.5px solid var(--border)}
+    .act-item:last-child{border-bottom:none}
+    .act-dot{width:4px;height:4px;border-radius:50%;background:var(--purple);flex-shrink:0;margin-top:.35rem}
+    .act-dot.gold{background:var(--gold)}
+    .act-time{font-family:'Cinzel',serif;font-size:.32rem;letter-spacing:.18em;color:var(--dim);margin-bottom:.12rem}
+    .act-txt{font-size:.82rem;font-style:italic;color:var(--chrome);line-height:1.5}
+
+    /* ADMIN */
+    .adm-row{display:grid;grid-template-columns:1fr 160px 90px;gap:.8rem;align-items:center;padding:.95rem 0;border-bottom:.5px solid var(--border)}
+    .adm-row:last-child{border-bottom:none}
+
+    /* BUTTONS */
+    .btn{background:transparent;border:.5px solid var(--purple);color:var(--purple);font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.35em;padding:.7rem 1.2rem;cursor:pointer;text-transform:uppercase;transition:background .25s,color .25s}
+    .btn:hover{background:var(--purple);color:var(--bg)}
+    .btn.gold-btn{border-color:var(--gold);color:var(--gold)}
+    .btn.gold-btn:hover{background:var(--gold);color:var(--bg)}
+    .btn.ghost{border-color:var(--border);color:var(--dim2)}
+    .btn.ghost:hover{background:var(--border);color:var(--chrome)}
+    .btn.sm{font-size:.38rem;padding:.5rem .85rem}
+    .btn:disabled{opacity:.38;cursor:not-allowed}
+    .btn-row{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+
+    #toasts{position:fixed;bottom:calc(var(--bottom-nav) + .8rem);right:1rem;z-index:400;display:flex;flex-direction:column;gap:.4rem}
+    .tst{font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.2em;padding:.65rem 1rem;border:.5px solid var(--border-hi);background:var(--bg2);color:var(--purple);text-transform:uppercase;animation:tstIn .25s ease}
+    .tst.err{color:var(--red-hi);border-color:rgba(204,32,32,.3)}
+    @keyframes tstIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+
+    #p-account{contain:layout style}
+    #clerkProfileCard{overflow:visible;min-height:200px}
+    #clerkProfile{overflow:visible;min-height:180px}
+    #clerkProfile > *{display:block}
+    .cl-avatarBox,.cl-userButtonAvatarBox{border-radius:50%!important;overflow:hidden!important}
+    .cl-avatar,.cl-userButtonAvatar{border-radius:50%!important}
+
+    /* ── RESPONSIVE (tablet) ── */
+    @media(max-width:900px){
+      .stat-bar{grid-template-columns:1fr 1fr}
+      .g2{grid-template-columns:1fr}
+      .task-grid{grid-template-columns:1fr}
+      .fin-grid{grid-template-columns:1fr 1fr}
+    }
+
+    /* ── MOBILE ── */
+    @media(max-width:640px){
+      :root{--sidebar:0px}
+      #sidebar{display:none}
+      #bottomNav{display:block}
+      html,body{height:100%;height:100dvh}
+      #shell{height:calc(100dvh - 52px - var(--bottom-nav));min-height:0}
+      #main{padding:1.2rem 1rem calc(var(--bottom-nav) + env(safe-area-inset-bottom) + 1.5rem)}
+      .stat-bar{grid-template-columns:1fr 1fr}
+      .ig{grid-template-columns:1fr}
+      .task-grid{grid-template-columns:1fr}
+      .fin-grid{grid-template-columns:1fr}
+      .ft{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .ph-left .ph-title{font-size:1.15rem}
+      .adm-row{grid-template-columns:1fr;gap:.4rem}
+      .tb-crumb{display:none}
+      .tb-tier{display:none}
+      #toasts{bottom:calc(var(--bottom-nav) + .5rem);right:.5rem;left:.5rem}
+      .tst{font-size:.38rem;padding:.55rem .8rem}
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadScreen">
+  <div class="ls-rule"></div>
+  <div class="ls-mark">T5S Holdings · Division 03</div>
+  <div class="ls-name">ALLIANCE</div>
+  <div class="ls-sub">Partnerships · Capital · Joint Ventures</div>
+  <div class="ls-status" id="loadStatus">Initializing…</div>
+  <div class="ls-bar"><div class="ls-bar-fill"></div></div>
+</div>
+
+<div id="errorScreen">
+  <div class="ls-rule"></div>
+  <div class="err-title">Authentication Error</div>
+  <div class="err-msg" id="errMsg">Unable to initialize authentication.</div>
+  <div class="err-detail" id="errDetail"></div>
+  <button class="btn" onclick="window.location.reload()">↺ Retry</button>
+  <a class="btn ghost" href="https://wearet5s.com" style="text-decoration:none;display:inline-flex;align-items:center;padding:.7rem 1.2rem">← Return to site</a>
+</div>
+
+<div id="topbar" style="display:none">
+  <div class="tb-left">
+    <span class="tb-mark">T5S Alliance</span>
+    <div class="tb-divider"></div>
+    <span class="tb-crumb">Partnerships Dashboard</span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-name" id="tbName"></span>
+    <span class="tb-tier" id="tbTier"></span>
+    <div id="clerkBtn"></div>
+  </div>
+</div>
+
+<div id="shell" style="display:none">
+  <!-- DESKTOP SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Navigation</div>
+      <div class="nav-item active" data-p="overview" onclick="goTo('overview')"><span class="nav-ico">◈</span><span class="nav-lbl">Overview</span></div>
+      <div class="nav-item" data-p="deals" onclick="goTo('deals')"><span class="nav-ico">◇</span><span class="nav-lbl">Deals</span><span class="nav-badge" id="dealsBadge" style="display:none">0</span></div>
+      <div class="nav-item" data-p="financials" onclick="goTo('financials')"><span class="nav-ico">◉</span><span class="nav-lbl">Financials</span></div>
+      <div class="nav-item" data-p="tiers" onclick="goTo('tiers')"><span class="nav-ico">△</span><span class="nav-lbl">Tiers</span></div>
+      <div class="nav-item" data-p="tasklog" onclick="goTo('tasklog')"><span class="nav-ico">▦</span><span class="nav-lbl">Task Log</span></div>
+      <div class="nav-item" data-p="announcements" onclick="goTo('announcements')"><span class="nav-ico">▣</span><span class="nav-lbl">Announcements</span><span class="nav-badge" id="annBadge" style="display:none">★</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Account</div>
+      <div class="nav-item" data-p="account" onclick="goTo('account')"><span class="nav-ico">◎</span><span class="nav-lbl">My Account</span></div>
+      <div class="nav-item" id="adminNav" data-p="admin" onclick="goTo('admin')" style="display:none"><span class="nav-ico">⬡</span><span class="nav-lbl">Admin</span></div>
+    </div>
+    <div class="sb-foot">
+      <a class="sb-back" href="https://wearet5s.com">← wearet5s.com</a>
+      <div class="live-pip"><div class="pip"></div><span class="pip-txt" id="refreshLabel">Live</span></div>
+      <div class="sb-status" id="sbStatus">● Connecting…</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- OVERVIEW -->
+    <div class="panel active" id="p-overview">
+      <div class="ph">
+        <div class="ph-left">
+          <div class="ph-eyebrow">T5S Alliance · Partnerships</div>
+          <div class="ph-title" id="ovTitle">Dashboard</div>
+          <div class="ph-sub">Access is earned, not given.</div>
+        </div>
+        <div class="ph-rule"></div>
+      </div>
+      <div class="stat-bar">
+        <div class="sc"><div class="sc-lbl">Standing</div><div class="sc-val" id="sTier">—</div></div>
+        <div class="sc"><div class="sc-lbl">Active Deals</div><div class="sc-val" id="sDeals">—</div></div>
+        <div class="sc"><div class="sc-lbl">Division</div><div class="sc-val" id="sDivision">Alliance</div></div>
+        <div class="sc"><div class="sc-lbl">Member Since</div><div class="sc-val" id="sJoined">—</div></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><span class="ct">Recent Deals</span><span class="cm" id="ovDealCount">—</span></div>
+          <div id="ovDeals"><div class="empty">Loading…</div></div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            <span class="ct">Announcements</span>
+            <div style="display:flex;align-items:center;gap:.8rem">
+              <span class="cm" id="ovAnnTime">—</span>
+              <button class="btn sm ghost" style="padding:.3rem .65rem;font-size:.34rem" onclick="fetchAnn(true)">↺</button>
+            </div>
+          </div>
+          <div id="ovAnn"><div class="empty">Loading…</div></div>
+        </div>
+      </div>
+      <div class="card g-full">
+        <div class="ch"><span class="ct">Recent Activity</span></div>
+        <div class="act-list" id="actList"><div class="empty">No activity yet.</div></div>
+      </div>
+    </div>
+
+    <!-- DEALS -->
+    <div class="panel" id="p-deals">
+      <div class="ph"><div class="ph-left"><div class="ph-eyebrow">Deal Flow</div><div class="ph-title">Active Deals</div><div class="ph-sub">All deals assigned to your Alliance account.</div></div><div class="ph-rule"></div></div>
+      <div id="dealsLocked" class="locked-notice" style="display:none"><p class="ln-text">Deal Flow <span>Restricted</span><br/>Unlocked at Tier III and above</p></div>
+      <div id="dealsContent"></div>
+    </div>
+
+    <!-- FINANCIALS -->
+    <div class="panel" id="p-financials">
+      <div class="ph"><div class="ph-left"><div class="ph-eyebrow">Capital</div><div class="ph-title">Financials</div><div class="ph-sub">Account-level positions and capital summary.</div></div><div class="ph-rule"></div></div>
+      <div id="finLocked" class="locked-notice" style="display:none"><p class="ln-text">Financial Data <span>Restricted</span><br/>Unlocked at Tier III and above</p></div>
+      <div id="finContent">
+        <div class="fin-grid">
+          <div class="fgc"><div class="fg-lbl">Capital Deployed</div><div class="fg-val" id="finCap">—</div></div>
+          <div class="fgc"><div class="fg-lbl">Equity Positions</div><div class="fg-val" id="finEq">—</div></div>
+          <div class="fgc"><div class="fg-lbl">Active Deals</div><div class="fg-val" id="finDls">—</div></div>
+        </div>
+        <div class="card" style="overflow-x:auto">
+          <div class="ch"><span class="ct">Deal Positions</span><span class="cm" id="finMonth">—</span></div>
+          <table class="ft"><thead><tr><th>Deal</th><th>Position</th><th>Division</th><th>Status</th><th>Capital</th></tr></thead>
+          <tbody id="finTbody"><tr><td colspan="5"><div class="empty">Loading…</div></td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIERS -->
+    <div class="panel" id="p-tiers">
+      <div class="ph"><div class="ph-left"><div class="ph-eyebrow">Partnership Structure</div><div class="ph-title">Tiers</div><div class="ph-sub">Your current standing and the Alliance hierarchy.</div></div><div class="ph-rule"></div></div>
+      <div class="card g-full" style="margin-bottom:1.2rem">
+        <div class="ch"><span class="ct">Your Standing</span></div>
+        <div class="cb">
+          <div style="margin-bottom:.6rem"><div style="font-family:'Cinzel',serif;font-size:.38rem;letter-spacing:.35em;color:var(--dim);text-transform:uppercase;margin-bottom:.4rem">Current Tier</div><div style="font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.18em;color:var(--purple)" id="tierPageVal">—</div></div>
+          <p style="font-size:.88rem;font-style:italic;color:var(--dim2);line-height:1.7">Tier advancement is reviewed and updated directly by T5S Holdings administration.</p>
+        </div>
+      </div>
+      <div class="card g-full">
+        <div class="ch"><span class="ct">Alliance Tier Structure</span></div>
+        <div class="tier-section">
+          <div class="tier-row"><span class="tier-num">Tier I</span><div><div class="tier-title">Principal</div><p class="tier-text">Founding members of T5S Holdings. Equity holders in the parent entity with full governance rights. Restricted to family members only.</p></div></div>
+          <div class="tier-row"><span class="tier-num">Tier II</span><div><div class="tier-title">Associate</div><p class="tier-text">Trusted professionals in the T5S orbit. Attorneys, CPAs, contractors, lenders. Preferred access, consistent business, no equity.</p></div></div>
+          <div class="tier-row"><span class="tier-num">Tier III</span><div><div class="tier-title">Partner</div><p class="tier-text">Co-investors brought in deal by deal. Earn deal-level equity. Advancement based on performance, not position.</p></div></div>
+          <div class="tier-row"><span class="tier-num">Tier IV</span><div><div class="tier-title">Member</div><p class="tier-text">Starting position within the T5S community. Prove your worth and advance through results.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASK LOG -->
+    <div class="panel" id="p-tasklog">
+      <div class="ph"><div class="ph-left"><div class="ph-eyebrow">Workspace</div><div class="ph-title">Task Log</div><div class="ph-sub">Deal notepad, finance snapshot, and The T5S assistant.</div></div><div class="ph-rule"></div></div>
+      <div id="taskLocked" class="locked-notice" style="display:none"><p class="ln-text">Task Log <span>Restricted</span><br/>Available at Tier III and above</p></div>
+      <div id="taskContent" style="display:none">
+        <div id="adminNotesWrap" style="display:none;margin-bottom:1.2rem">
+          <div class="card">
+            <div class="ch">
+              <span class="ct">Organization Notes</span>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="notesFilterBar">
+                <button class="fb active" onclick="filterNotes('all',this)">All</button>
+              </div>
+            </div>
+            <div style="padding:.5rem 1.4rem;max-height:300px;overflow-y:auto" id="adminNotesList"><div class="empty">No notes yet.</div></div>
+            <div style="padding:.8rem 1.4rem;border-top:.5px solid var(--border);display:flex;justify-content:flex-end">
+              <button class="btn sm" style="border-color:var(--red-hi);color:var(--red-hi)" onclick="clearAllNotes()">Delete All Notes</button>
+            </div>
+          </div>
+        </div>
+        <div class="task-grid">
+          <div style="display:flex;flex-direction:column;gap:1.2rem">
+            <div class="task-panel">
+              <div class="tp-head"><span class="tp-title">Deal Notepad</span><span class="tp-sub" id="notepadGroupLabel">—</span></div>
+              <div class="tp-body">
+                <div class="note-list" id="noteList"><div class="empty">No notes yet.</div></div>
+                <div class="note-compose">
+                  <textarea class="note-ta" id="noteInput" placeholder="Add a note for your deal group…" rows="2"></textarea>
+                  <button class="note-post" onclick="postNote()">Post Note →</button>
+                </div>
+              </div>
+            </div>
+            <div class="task-panel">
+              <div class="tp-head"><span class="tp-title">Finance Snapshot</span><span class="tp-sub">Your Account</span></div>
+              <div class="tp-body" style="padding:0">
+                <div class="snap-grid">
+                  <div class="snap-cell"><div class="snap-lbl">Active Deals</div><div class="snap-val" id="snapDeals">—</div></div>
+                  <div class="snap-cell"><div class="snap-lbl">Your Position</div><div class="snap-val" id="snapPosition">—</div></div>
+                  <div class="snap-cell"><div class="snap-lbl">Division</div><div class="snap-val" id="snapDiv">—</div></div>
+                  <div class="snap-cell"><div class="snap-lbl">Standing</div><div class="snap-val" id="snapTier">—</div></div>
+                  <div class="snap-cell" style="grid-column:1/-1"><div class="snap-lbl">Latest Deal</div><div class="snap-val" id="snapDealName">—</div><div class="snap-sub" id="snapDealNote"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="task-panel" style="min-height:460px">
+            <div class="tp-head"><span class="tp-title">The T5S</span><span class="tp-sub">AI Assistant</span></div>
+            <div class="tp-body">
+              <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg t5s"><span class="chat-meta">The T5S</span><div class="chat-bubble">You reached me. What do you need.</div></div>
+              </div>
+              <div class="chat-typing" id="chatTyping"><div class="chat-dot"></div><div class="chat-dot"></div><div class="chat-dot"></div><span>Processing</span></div>
+              <div class="chat-compose">
+                <textarea class="chat-input" id="chatInput" placeholder="Speak." rows="1" onkeydown="chatKeydown(event)"></textarea>
+                <button class="chat-send" id="chatSendBtn" onclick="sendChat()">Send →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="panel" id="p-announcements">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-eyebrow">Communications</div><div class="ph-title">Announcements</div><div class="ph-sub">Posted from T5S. Refreshes every 15 minutes.</div></div>
+        <div class="ph-rule"></div>
+        <div class="btn-row"><button class="btn sm ghost" onclick="fetchAnn(true)">↺ Refresh</button></div>
+      </div>
+      <div class="fbar">
+        <button class="fb active" onclick="filterAnn('all',this)">All</button>
+        <button class="fb" onclick="filterAnn('pinned',this)">Pinned</button>
+        <button class="fb" onclick="filterAnn('div',this)">Alliance Only</button>
+      </div>
+      <div id="annList" class="card"><div class="empty" style="padding:1.5rem">Loading…</div></div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="panel" id="p-account">
+      <div class="ph"><div class="ph-left"><div class="ph-eyebrow">Profile</div><div class="ph-title">My Account</div></div><div class="ph-rule"></div></div>
+      <div id="admBadgeWrap" style="display:none"><div class="adm-badge"><span>⬡ T5S Administration · Executive Access</span></div></div>
+      <div class="tier-band">
+        <div><div class="tb-tier-lbl">Current Standing</div><div class="tb-tier-val" id="acTier">—</div></div>
+        <div class="tb-note" id="tierNote" style="display:none">Tier advancement is reviewed and updated by T5S Holdings administration.</div>
+      </div>
+      <div class="ig">
+        <div class="ic"><div class="ic-lbl">Full Name</div><div class="ic-val" id="acName">—</div></div>
+        <div class="ic"><div class="ic-lbl">Email</div><div class="ic-val" id="acEmail">—</div></div>
+        <div class="ic"><div class="ic-lbl">Division</div><div class="ic-val" id="acDiv">—</div></div>
+        <div class="ic"><div class="ic-lbl">Role</div><div class="ic-val" id="acRole">—</div></div>
+        <div class="ic"><div class="ic-lbl">Member Since</div><div class="ic-val" id="acJoined">—</div></div>
+        <div class="ic"><div class="ic-lbl">Portal</div><div class="ic-val">Alliance Dashboard v2.1</div></div>
+      </div>
+      <div class="card" id="clerkProfileCard" style="overflow:visible">
+        <div class="ch"><span class="ct">Manage Account</span></div>
+        <div class="cb" id="clerkProfile" style="overflow:visible;min-height:200px"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="panel" id="p-admin">
+      <div class="ph"><div class="ph-left"><div class="ph-eyebrow" style="color:var(--gold)">Executive</div><div class="ph-title">Admin Panel</div></div><div class="ph-rule"></div></div>
+      <div class="stat-bar" style="margin-bottom:1.5rem">
+        <div class="sc"><div class="sc-lbl">Total Members</div><div class="sc-val" id="admTotal">—</div></div>
+        <div class="sc"><div class="sc-lbl">Division</div><div class="sc-val">Alliance</div></div>
+        <div class="sc"><div class="sc-lbl">Your Standing</div><div class="sc-val" id="admMyTier">—</div></div>
+        <div class="sc"><div class="sc-lbl">Version</div><div class="sc-val">2.1 · 2026</div></div>
+      </div>
+      <div class="card" style="margin-bottom:1.2rem">
+        <div class="ch"><span class="ct">Member Tier Management</span></div>
+        <div class="cb">
+          <div style="margin-bottom:1rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center">
+            <input id="memberSearch" placeholder="Search by name or email…" style="max-width:280px;background:transparent;border:.5px solid var(--border);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:.9rem;padding:.7rem .9rem;outline:none;width:100%" oninput="filterMembers()"/>
+            <span style="font-family:'Cinzel',serif;font-size:.34rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase" id="memberCount"></span>
+          </div>
+          <div id="admList"><div class="empty">Loading members…</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Activity Log</span></div>
+        <div class="act-list" id="admFeed"><div class="empty">No activity.</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div id="bottomNav">
+  <div class="bn-inner">
+    <div class="bn-item active" data-p="overview" onclick="goTo('overview')">
+      <span class="bn-ico">◈</span><span class="bn-lbl">Overview</span>
+    </div>
+    <div class="bn-item" data-p="deals" onclick="goTo('deals')">
+      <span class="bn-ico">◇</span><span class="bn-lbl">Deals</span>
+      <span class="bn-dot" id="bnDealDot"></span>
+    </div>
+    <div class="bn-item" data-p="financials" onclick="goTo('financials')">
+      <span class="bn-ico">◉</span><span class="bn-lbl">Financials</span>
+    </div>
+    <div class="bn-item" data-p="tiers" onclick="goTo('tiers')">
+      <span class="bn-ico">△</span><span class="bn-lbl">Tiers</span>
+    </div>
+    <div class="bn-item" data-p="tasklog" onclick="goTo('tasklog')">
+      <span class="bn-ico">▦</span><span class="bn-lbl">Tasks</span>
+    </div>
+    <div class="bn-item" data-p="announcements" onclick="goTo('announcements')">
+      <span class="bn-ico">▣</span><span class="bn-lbl">News</span>
+      <span class="bn-dot" id="bnAnnDot"></span>
+    </div>
+    <div class="bn-item" data-p="account" onclick="goTo('account')">
+      <span class="bn-ico">◎</span><span class="bn-lbl">Account</span>
+    </div>
+    <div class="bn-item" id="bnAdminItem" data-p="admin" onclick="goTo('admin')" style="display:none">
+      <span class="bn-ico">⬡</span><span class="bn-lbl">Admin</span>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* ── CONFIG ── */
+const SB_URL='https://pumteihkiaftgwbexaid.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1bXRlaWhraWFmdGd3YmV4YWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NjAyMjYsImV4cCI6MjA5MzEzNjIyNn0.6JqNyNH_BBs-CsvAT41L_7Ku8G4CN_ymb9fXVYJEvf4';
+const SB_H={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'};
+const TIER_LABELS={1:'Tier I — Principal',2:'Tier II — Associate',3:'Tier III — Partner',4:'Tier IV — Member'};
+const SHADOW_WORKER='https://shadow-t5s.t5sholdings00.workers.dev';
+const SHADOW_MODEL='llama-3.3-70b-versatile';
+
+/* ── STATE ── */
+let _U=null,_ann=[],_annFilter='all',_annTimer=null,_annSec=900,_activity=[],_members=[];
+let _clerkProfileMounted=false,_dashboardPopulated=false,_chatHistory=[];
+let _noteChannel=null,_currentNotesFilter='all';
+
+/* ── UTILS ── */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function toast(msg,err=false){const z=document.getElementById('toasts');const el=document.createElement('div');el.className='tst'+(err?' err':'');el.textContent=msg;z.appendChild(el);setTimeout(()=>el.remove(),3200)}
+function setLoad(msg){const el=document.getElementById('loadStatus');if(el)el.textContent=msg}
+function showError(msg,detail=''){document.getElementById('loadScreen').classList.add('out');setTimeout(()=>{const ls=document.getElementById('loadScreen');if(ls)ls.remove()},700);document.getElementById('errMsg').textContent=msg;document.getElementById('errDetail').textContent=detail;document.getElementById('errorScreen').classList.add('show')}
+function setSbStatus(ok,msg){const el=document.getElementById('sbStatus');el.className='sb-status '+(ok?'ok':'err');el.textContent=(ok?'● ':'○ ')+msg}
+function logAct(action,isAdmin=false){_activity.unshift({action,isAdmin,time:new Date().toISOString()});_activity=_activity.slice(0,50);renderAct()}
+
+/* ── localStorage ── */
+function ls(key,fb='{}'){try{return JSON.parse(localStorage.getItem(key)||fb)}catch(e){return JSON.parse(fb)}}
+function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}}
+function getMemberMeta(uid){return ls('t5s_members')[uid]||null}
+function setMemberMeta(uid,data){const d=ls('t5s_members');d[uid]=data;lsSet('t5s_members',d)}
+
+/* ── NAVIGATION ── */
+function goTo(id){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.p===id));
+  document.querySelectorAll('.bn-item').forEach(n=>n.classList.toggle('active',n.dataset.p===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='p-'+id));
+  if(id==='announcements'){
+    document.getElementById('annBadge').style.display='none';
+    document.getElementById('bnAnnDot').classList.remove('show');
+  }
+  if(id==='deals') document.getElementById('bnDealDot').classList.remove('show');
+  if(id==='admin') renderAdminPanel();
+  document.getElementById('main').scrollTop=0;
+}
+
+/* ── POPULATE ── */
+function populateDash(user){
+  const meta=user.publicMetadata||{};
+  const lsMeta=getMemberMeta(user.id)||{};
+  const name=user.fullName||user.firstName||'Member';
+  const email=user.primaryEmailAddress?.emailAddress||'—';
+  const isAdmin=meta.role==='admin';
+  const tier=parseInt(lsMeta.tier)||parseInt(meta.tier)||4;
+  const division=lsMeta.division||'Alliance';
+  const role=lsMeta.role||meta.role||'—';
+  const joined=user.createdAt?new Date(user.createdAt).toLocaleDateString('en-US',{month:'long',year:'numeric'}):'—';
+  const deals=Array.isArray(meta.active_deals)?meta.active_deals:[];
+
+  if(!getMemberMeta(user.id)){
+    setMemberMeta(user.id,{name,email,tier,division,role,onboarded:true,joinedRaw:user.createdAt});
+  }
+
+  _U={uid:user.id,name,email,isAdmin,tier,division,role,joined,deals};
+
+  document.getElementById('tbName').textContent=name;
+  document.getElementById('tbTier').textContent=TIER_LABELS[tier]||TIER_LABELS[4];
+  document.getElementById('ovTitle').textContent=`Welcome, ${name.split(' ')[0]}`;
+  document.getElementById('sTier').textContent=TIER_LABELS[tier]||TIER_LABELS[4];
+  document.getElementById('sJoined').textContent=joined;
+  document.getElementById('sDivision').textContent=division;
+  document.getElementById('acTier').textContent=TIER_LABELS[tier]||TIER_LABELS[4];
+  document.getElementById('acName').textContent=name;
+  document.getElementById('acEmail').textContent=email;
+  document.getElementById('acDiv').textContent=division;
+  document.getElementById('acRole').textContent=role!=='admin'?role:'Administrator';
+  document.getElementById('acJoined').textContent=joined;
+  document.getElementById('tierPageVal').textContent=TIER_LABELS[tier]||TIER_LABELS[4];
+  document.getElementById('admBadgeWrap').style.display=isAdmin?'block':'none';
+  document.getElementById('adminNav').style.display=isAdmin?'flex':'none';
+  const bnAdmin=document.getElementById('bnAdminItem');
+  if(bnAdmin)bnAdmin.style.display=isAdmin?'flex':'none';
+  const tn=document.getElementById('tierNote');if(tn)tn.style.display=(!isAdmin&&tier>=3)?'block':'none';
+  const amt=document.getElementById('admMyTier');if(amt)amt.textContent=TIER_LABELS[tier]||TIER_LABELS[4];
+  document.getElementById('finMonth').textContent=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  renderDeals(deals,tier,isAdmin);
+  renderFin(deals,tier,isAdmin);
+  initTaskLog(user,tier,isAdmin,deals);
+}
+
+/* ── DEALS ── */
+function dealHTML(d,isAdmin,tier){
+  const sc=(d.status||'active').toLowerCase();
+  const showCap=isAdmin||tier<=1;
+  return`<div class="deal">
+    <div class="deal-hd"><span class="deal-name">${esc(d.name||'Unnamed')}</span><span class="deal-st ${sc}">${esc(d.status||'Active')}</span></div>
+    <div class="deal-meta">
+      <div><div class="dm-lbl">Division</div><div class="dm-val">${esc(d.division||'—')}</div></div>
+      <div><div class="dm-lbl">Position</div><div class="dm-val">${esc(d.position||'—')}</div></div>
+      <div><div class="dm-lbl">Date</div><div class="dm-val">${esc(d.date||'—')}</div></div>
+      ${showCap&&d.capital?`<div><div class="dm-lbl">Capital</div><div class="dm-val">${esc(d.capital)}</div></div>`:''}
+    </div>
+    ${d.note?`<div class="deal-note">${esc(d.note)}</div>`:''}
+  </div>`;
+}
+
+function renderDeals(deals,tier,isAdmin){
+  const canSee=isAdmin||tier<=3;
+  document.getElementById('sDeals').textContent=canSee?deals.length:'—';
+  document.getElementById('ovDealCount').textContent=canSee?`${deals.length} deal${deals.length!==1?'s':''}`:'Restricted';
+  if(deals.length&&canSee){
+    document.getElementById('dealsBadge').style.display='block';
+    document.getElementById('dealsBadge').textContent=deals.length;
+    document.getElementById('bnDealDot').classList.add('show');
+  }
+  const ovEl=document.getElementById('ovDeals');
+  if(!canSee){ovEl.innerHTML='<div class="empty">Unlocked at Tier III+</div>';document.getElementById('dealsLocked').style.display='block';document.getElementById('dealsContent').innerHTML='';return;}
+  document.getElementById('dealsLocked').style.display='none';
+  if(!deals.length){ovEl.innerHTML='<div class="empty">No deals assigned.</div>';document.getElementById('dealsContent').innerHTML='<div class="empty" style="padding:1.5rem">No deals assigned yet.</div>';return;}
+  ovEl.innerHTML=deals.slice(0,2).map(d=>dealHTML(d,isAdmin,tier)).join('');
+  document.getElementById('dealsContent').innerHTML=`<div class="card">${deals.map(d=>dealHTML(d,isAdmin,tier)).join('')}</div>`;
+}
+
+/* ── FINANCIALS ── */
+function renderFin(deals,tier,isAdmin){
+  const canSee=isAdmin||tier<=3;
+  document.getElementById('finLocked').style.display=canSee?'none':'block';
+  document.getElementById('finContent').style.display=canSee?'block':'none';
+  if(!canSee)return;
+  const showCap=isAdmin||tier<=1;
+  let total=0;deals.forEach(d=>{if(!d.capital)return;const n=parseFloat(String(d.capital).replace(/[$,\s~]/g,''));if(!isNaN(n))total+=n;});
+  document.getElementById('finCap').textContent=showCap?(total?'$'+total.toLocaleString('en-US'):'—'):'Restricted';
+  document.getElementById('finEq').textContent=deals.length||'—';
+  document.getElementById('finDls').textContent=deals.filter(d=>(d.status||'').toLowerCase()==='active').length||deals.length||'—';
+  const tb=document.getElementById('finTbody');
+  if(!deals.length){tb.innerHTML='<tr><td colspan="5"><div class="empty">No deal positions on file.</div></td></tr>';return;}
+  tb.innerHTML=deals.map(d=>{const sc=(d.status||'active').toLowerCase();return`<tr>
+    <td><span class="ft-lbl">Deal</span>${esc(d.name||'—')}</td>
+    <td><span class="ft-lbl">Position</span>${esc(d.position||'—')}</td>
+    <td><span class="ft-lbl">Division</span>${esc(d.division||'—')}</td>
+    <td><span class="deal-st ${sc}" style="display:inline-block">${esc(d.status||'Active')}</span></td>
+    <td>${showCap?esc(d.capital||'—'):'—'}</td>
+  </tr>`}).join('');
+}
+
+/* ── ANNOUNCEMENTS ── */
+async function fetchAnn(manual=false){
+  _annSec=900;
+  try{
+    const res=await fetch(`${SB_URL}/rest/v1/t5s_announcements?select=*&order=pinned.desc,created_at.desc`,{headers:SB_H});
+    if(!res.ok){const txt=await res.text();throw new Error(`${res.status}: ${txt}`);}
+    _ann=await res.json();
+    renderAnnList();
+    renderOvAnn();
+    const pinned=_ann.filter(a=>a.pinned&&(a.division==='Alliance'||a.division==='All'));
+    if(pinned.length){
+      document.getElementById('annBadge').style.display='block';
+      document.getElementById('bnAnnDot').classList.add('show');
+    }
+    setSbStatus(true,'Database Online · 15 Min Timer');
+    const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    document.getElementById('ovAnnTime').textContent=`Updated ${t}`;
+    if(manual)toast('Announcements refreshed');
+  }catch(e){
+    console.error(e);setSbStatus(false,'Supabase error');
+    if(e.message?.includes('42P01')||e.message?.includes('404')){
+      document.getElementById('annList').innerHTML='<div class="empty" style="padding:2rem">Table not found in Supabase.</div>';
+      document.getElementById('ovAnn').innerHTML='<div class="empty">Table not set up.</div>';
+    }else if(manual)toast('Refresh failed',true);
+  }
+}
+
+function renderOvAnn(){
+  const el=document.getElementById('ovAnn');
+  const items=_ann.filter(a=>a.division==='Alliance'||a.division==='All').slice(0,3);
+  if(!items.length){el.innerHTML='<div class="empty">No announcements yet.</div>';return;}
+  el.innerHTML=items.map(a=>{
+    const previewBody=(a.body||'').slice(0,100)+(a.body||'').length>100?'…':'';
+    return`<div style="padding:.75rem 1.4rem;border-bottom:.5px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem">
+        ${a.pinned?'<span class="ann-pin-badge">★</span>':''}
+        <div style="font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.1em;color:var(--chrome)">${esc(a.title||'')}</div>
+      </div>
+      ${previewBody?`<div style="font-size:.8rem;font-style:italic;color:var(--dim2);line-height:1.5">${esc(previewBody)}</div>`:''}
+    </div>`;
+  }).join('');
+  const last=el.querySelector('div:last-child');if(last)last.style.borderBottom='none';
+}
+
+function renderAnnList(){
+  const el=document.getElementById('annList');
+  let data=[..._ann];
+  if(_annFilter==='pinned')data=data.filter(a=>a.pinned&&(a.division==='Alliance'||a.division==='All'));
+  else if(_annFilter==='all')data=data.filter(a=>a.division==='All'||a.division==='Alliance');
+  else if(_annFilter==='div')data=data.filter(a=>a.division==='Alliance');
+  if(!data.length){el.innerHTML='<div class="empty" style="padding:1.5rem">No announcements found.</div>';return;}
+  el.innerHTML=data.map(a=>`<div class="ann${a.pinned?' pinned':''}">
+    <div class="ann-hd">
+      <div>${a.pinned?'<span class="ann-pin-badge">★ Pinned · </span>':''}<span class="ann-title">${esc(a.title||'')}</span></div>
+      <span class="ann-div">${esc(a.division||'All')}</span>
+    </div>
+    <div class="ann-body">${esc(a.body||'')}</div>
+    <div class="ann-ft">
+      <span class="ann-author">${esc(a.author||'T5S Administration')}</span>
+      <span class="ann-time">${new Date(a.created_at).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'})}</span>
+    </div>
+  </div>`).join('');
+}
+
+function filterAnn(type,btn){_annFilter=type;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnnList()}
+
+function startCountdown(){
+  clearInterval(_annTimer);
+  _annTimer=setInterval(()=>{
+    _annSec--;
+    const m=Math.floor(_annSec/60),s=_annSec%60;
+    document.getElementById('refreshLabel').textContent=`${m}:${String(s).padStart(2,'0')}`;
+    if(_annSec<=0)fetchAnn();
+  },1000);
+}
+
+/* ── ACTIVITY ── */
+function renderAct(){
+  const el=document.getElementById('actList');
+  if(!_activity.length){el.innerHTML='<div class="empty">No activity yet.</div>';return;}
+  el.innerHTML=_activity.slice(0,10).map(a=>`<div class="act-item"><div class="act-dot${a.isAdmin?' gold':''}"></div><div><div class="act-time">${new Date(a.time).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'})}</div><div class="act-txt">${esc(a.action)}</div></div></div>`).join('');
+  const af=document.getElementById('admFeed');if(af)af.innerHTML=el.innerHTML;
+}
+
+/* ── TASK LOG ── */
+function initTaskLog(user,tier,isAdmin,deals){
+  const canAccess=isAdmin||tier<=3;
+  document.getElementById('taskLocked').style.display=canAccess?'none':'block';
+  document.getElementById('taskContent').style.display=canAccess?'block':'none';
+  if(!canAccess)return;
+  const latest=deals[0]||null;
+  const lsMeta=getMemberMeta(user.id)||{};
+  document.getElementById('snapDeals').textContent=deals.length||'0';
+  document.getElementById('snapPosition').textContent=latest?.position||'—';
+  document.getElementById('snapDiv').textContent=lsMeta.division||'Alliance';
+  document.getElementById('snapTier').textContent=TIER_LABELS[tier]||TIER_LABELS[4];
+  document.getElementById('snapDealName').textContent=latest?.name||'No active deals';
+  document.getElementById('snapDealNote').textContent=latest?.note||'';
+  document.getElementById('adminNotesWrap').style.display=isAdmin?'block':'none';
+  const noteKey=deals.length?deals[0].name:user.id;
+  document.getElementById('notepadGroupLabel').textContent=deals.length?deals[0].name:'Personal';
+  renderNotepad(noteKey);
+  if(isAdmin)renderAdminNotes('all');
+}
+
+/* ── NOTES (Supabase) ── */
+async function renderNotepad(dealKey){
+  const el=document.getElementById('noteList');
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const res=await fetch(`${SB_URL}/rest/v1/t5s_notes?deal_key=eq.${encodeURIComponent(dealKey)}&order=created_at.asc`,{headers:SB_H});
+    renderNoteList(await res.json(),dealKey);
+  }catch(e){el.innerHTML='<div class="empty">Failed to load notes.</div>';}
+  if(_noteChannel)clearInterval(_noteChannel);
+  _noteChannel=setInterval(async()=>{
+    try{const r=await fetch(`${SB_URL}/rest/v1/t5s_notes?deal_key=eq.${encodeURIComponent(dealKey)}&order=created_at.asc`,{headers:SB_H});renderNoteList(await r.json(),dealKey);}catch(e){}
+  },8000);
+}
+
+function renderNoteList(notes,dealKey){
+  const el=document.getElementById('noteList');
+  if(!Array.isArray(notes)||!notes.length){el.innerHTML='<div class="empty">No notes yet.</div>';return;}
+  el.innerHTML=notes.map(n=>`
+    <div class="note-item">
+      <div class="note-meta" style="display:flex;justify-content:space-between;align-items:center">
+        <div><span class="note-author">${esc(n.name||'Member')}</span><span class="note-ts"> · ${new Date(n.created_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span></div>
+        ${_U?.isAdmin?`<button class="note-del" onclick="deleteNote('${n.id}')" title="Delete">✕</button>`:''}
+      </div>
+      <p class="note-text">${esc(n.text)}</p>
+    </div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+async function postNote(){
+  const text=document.getElementById('noteInput').value.trim();
+  if(!text||!_U)return;
+  const dealKey=_U.deals.length?_U.deals[0].name:_U.uid;
+  try{
+    await fetch(`${SB_URL}/rest/v1/t5s_notes`,{method:'POST',headers:{...SB_H,'Prefer':'return=minimal'},body:JSON.stringify({deal_key:dealKey,uid:_U.uid,name:_U.name,author:_U.name,division:_U.division,text})});
+    document.getElementById('noteInput').value='';
+    const res=await fetch(`${SB_URL}/rest/v1/t5s_notes?deal_key=eq.${encodeURIComponent(dealKey)}&order=created_at.asc`,{headers:SB_H});
+    renderNoteList(await res.json(),dealKey);
+    if(_U.isAdmin)renderAdminNotes(_currentNotesFilter);
+    logAct(`Posted a note on: ${dealKey}`);
+  }catch(e){toast('Failed to post note',true);}
+}
+
+async function deleteNote(id){
+  try{
+    await fetch(`${SB_URL}/rest/v1/t5s_notes?id=eq.${id}`,{method:'DELETE',headers:SB_H});
+    if(_U){const dealKey=_U.deals.length?_U.deals[0].name:_U.uid;const res=await fetch(`${SB_URL}/rest/v1/t5s_notes?deal_key=eq.${encodeURIComponent(dealKey)}&order=created_at.asc`,{headers:SB_H});renderNoteList(await res.json(),dealKey);}
+    renderAdminNotes(_currentNotesFilter);
+    toast('Note deleted');
+  }catch(e){toast('Failed to delete',true);}
+}
+
+async function clearAllNotes(){
+  if(!confirm('Delete ALL notes? This cannot be undone.'))return;
+  try{
+    await fetch(`${SB_URL}/rest/v1/t5s_notes`,{method:'DELETE',headers:{...SB_H,'Prefer':'return=minimal'}});
+    renderAdminNotes('all');
+    if(_U){const dealKey=_U.deals.length?_U.deals[0].name:_U.uid;renderNoteList([],dealKey);}
+    toast('All notes deleted');
+  }catch(e){toast('Failed',true);}
+}
+
+function filterNotes(filter,btn){
+  _currentNotesFilter=filter;
+  document.querySelectorAll('#notesFilterBar .fb').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderAdminNotes(filter);
+}
+
+async function renderAdminNotes(filter){
+  const el=document.getElementById('adminNotesList');if(!el)return;
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    let url=`${SB_URL}/rest/v1/t5s_notes?order=created_at.desc`;
+    if(filter&&filter!=='all')url+=`&deal_key=eq.${encodeURIComponent(filter)}`;
+    const res=await fetch(url,{headers:SB_H});
+    const notes=await res.json();
+    const allKeys=[...new Set(notes.map(n=>n.deal_key).filter(Boolean))];
+    const filterBar=document.getElementById('notesFilterBar');
+    if(filterBar){
+      filterBar.innerHTML='<button class="fb'+(filter==='all'?' active':'')+'" onclick="filterNotes(\'all\',this)">All</button>'+
+        allKeys.map(k=>`<button class="fb${filter===k?' active':''}" onclick="filterNotes('${k.replace(/'/g,"\\'")}',this)">${esc(k)}</button>`).join('');
+    }
+    if(!Array.isArray(notes)||!notes.length){el.innerHTML='<div class="empty">No notes yet.</div>';return;}
+    el.innerHTML=notes.map(n=>`
+      <div class="note-item">
+        <div class="note-meta" style="display:flex;justify-content:space-between;align-items:center">
+          <div><span class="note-author">${esc(n.name||'Member')}</span><span style="color:var(--purple);opacity:.6;margin-left:.4rem">· ${esc(n.deal_key||'')}</span><span class="note-ts"> · ${new Date(n.created_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span></div>
+          <button class="note-del" onclick="deleteNote('${n.id}')" title="Delete">✕</button>
+        </div>
+        <p class="note-text">${esc(n.text)}</p>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="empty">Failed to load.</div>';}
+}
+
+/* ── T5S AI CHAT ── */
+function chatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text||!_U)return;
+  const btn=document.getElementById('chatSendBtn');
+  btn.disabled=true;input.value='';input.style.height='auto';
+  appendChatMsg('user',text);
+  _chatHistory.push({role:'user',content:text});
+  const typing=document.getElementById('chatTyping');
+  typing.classList.add('show');scrollChat();
+
+  try{
+    const lsMeta=getMemberMeta(_U.uid)||{};
+    const memberContext=`Name: ${_U.name}\nDivision: ${lsMeta.division||'Alliance'}\nRole: ${lsMeta.role||_U.role||'Unknown'}\nTier: ${TIER_LABELS[_U.tier]}\nActive Deals: ${_U.deals.length?_U.deals.map(d=>d.name).join(', '):'None assigned'}\nAdmin: ${_U.isAdmin?'Yes':'No'}`;
+
+    const res=await fetch(SHADOW_WORKER,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:SHADOW_MODEL,member_context:memberContext,messages:_chatHistory.slice(-20),max_tokens:512,temperature:0.75,top_p:0.9,stream:true})
+    });
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`);}
+    typing.classList.remove('show');
+    const botDiv=appendChatMsg('t5s','');
+    const reader=res.body.getReader();const decoder=new TextDecoder();let full='';
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      const chunk=decoder.decode(value,{stream:true});
+      const lines=chunk.split('\n').filter(l=>l.startsWith('data: '));
+      for(const line of lines){
+        const data=line.slice(6).trim();if(data==='[DONE]')break;
+        try{const json=JSON.parse(data);const delta=json.choices?.[0]?.delta?.content||'';full+=delta;botDiv.querySelector('.chat-bubble').innerHTML=esc(full).replace(/\n/g,'<br/>');scrollChat();}catch(_){}
+      }
+    }
+    _chatHistory.push({role:'assistant',content:full});
+
+  }catch(e){
+    typing.classList.remove('show');
+    console.error('Chat error:',e);
+    appendChatMsg('t5s','Connection failed. Try again.');
+  }
+  btn.disabled=false;scrollChat();
+  logAct('Sent a message to The T5S assistant');
+}
+
+function appendChatMsg(role,text){
+  const feed=document.getElementById('chatMessages');
+  const label=role==='user'?(_U?.name||'You'):'The T5S';
+  const div=document.createElement('div');
+  div.className='chat-msg '+role;
+  div.innerHTML=`<span class="chat-meta">${esc(label)}</span><div class="chat-bubble">${esc(text).replace(/\n/g,'<br/>')}</div>`;
+  feed.appendChild(div);return div;
+}
+function scrollChat(){const f=document.getElementById('chatMessages');f.scrollTop=f.scrollHeight;}
+
+/* ── ADMIN ── */
+function renderAdminPanel(){
+  if(!_U?.isAdmin&&_U?.tier!==1)return;
+  const allMeta=ls('t5s_members');const ids=Object.keys(allMeta);
+  document.getElementById('admTotal').textContent=ids.length||'1';
+  _members=ids.map(id=>({clerk_id:id,...allMeta[id]}));
+  renderMemberList(_members);
+}
+
+function filterMembers(){const q=document.getElementById('memberSearch')?.value?.toLowerCase()||'';renderMemberList(q?_members.filter(m=>(m.name||'').toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q)):_members)}
+
+function renderMemberList(list){
+  const el=document.getElementById('admList');const countEl=document.getElementById('memberCount');
+  if(countEl)countEl.textContent=`${list.length} member${list.length!==1?'s':''}`;
+  if(!list.length){el.innerHTML='<div class="empty">No members found.</div>';return;}
+  el.innerHTML=list.map(m=>{const tv=parseInt(m.tier)||4;const safeName=esc(m.name||'Unknown');const safeId=m.clerk_id||'';
+    return`<div class="adm-row" id="ar-${safeId}">
+      <div><div style="font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.14em;color:var(--chrome)">${safeName}</div><div style="font-size:.78rem;font-style:italic;color:var(--dim);margin-top:.15rem">${esc(m.email||'')} · ${esc(m.division||'—')}</div></div>
+      <select id="ts-${safeId}" style="background:transparent;border:.5px solid var(--border);color:var(--purple);font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.12em;padding:.42rem .65rem;cursor:pointer;outline:none;width:100%" ${safeId===_U.uid?'disabled':''}>
+        <option value="1" ${tv===1?'selected':''}>Tier I</option>
+        <option value="2" ${tv===2?'selected':''}>Tier II</option>
+        <option value="3" ${tv===3?'selected':''}>Tier III</option>
+        <option value="4" ${tv===4?'selected':''}>Tier IV</option>
+      </select>
+      <button class="btn sm" onclick="saveTier('${safeId}','${safeName}')" ${safeId===_U.uid?'disabled':''}>Save</button>
+    </div>`;
+  }).join('');
+  const rows=el.querySelectorAll('.adm-row');if(rows.length)rows[rows.length-1].style.borderBottom='none';
+}
+
+function saveTier(clerkId,memberName){
+  const sel=document.getElementById('ts-'+clerkId);if(!sel)return;
+  const newTier=parseInt(sel.value);
+  const meta=getMemberMeta(clerkId)||{};meta.tier=newTier;setMemberMeta(clerkId,meta);
+  const btn=document.querySelector(`#ar-${clerkId} .btn`);
+  if(btn){btn.textContent='Saved ✓';btn.style.color='#22c55e';setTimeout(()=>{btn.textContent='Save';btn.style.color='';},2000);}
+  logAct(`Updated ${memberName}'s tier to ${TIER_LABELS[newTier]}`,true);
+  toast(`${memberName} → ${TIER_LABELS[newTier]}`);
+}
+
+/* ── CLERK APPEARANCE ── */
+const APPEARANCE={
+  variables:{colorBackground:'#080808',colorText:'#F0EEEC',colorPrimary:'#7F77DD',colorInputBackground:'transparent',colorInputText:'#F0EEEC',borderRadius:'0px',fontFamily:"'Cormorant Garamond',Georgia,serif"},
+  elements:{
+    card:{background:'transparent',border:'.5px solid rgba(127,119,221,.25)',boxShadow:'none',borderRadius:'0'},
+    headerTitle:{fontFamily:"'Cinzel',serif",letterSpacing:'.2em',color:'#C8C8D0'},
+    formFieldLabel:{color:'#888880',fontFamily:"'Cinzel',serif",letterSpacing:'.12em',fontSize:'.7rem'},
+    formFieldInput:{background:'transparent',border:'.5px solid rgba(127,119,221,.35)',borderRadius:'0',color:'#F0EEEC'},
+    formButtonPrimary:{background:'transparent',border:'.5px solid #7F77DD',borderRadius:'0',color:'#7F77DD',fontFamily:"'Cinzel',serif",letterSpacing:'.3em',textTransform:'uppercase',boxShadow:'none'},
+    footerActionLink:{color:'#7F77DD'},
+    avatarBox:{border:'.5px solid rgba(127,119,221,.4)',borderRadius:'50%'},
+    userButtonPopoverCard:{background:'#080808',border:'.5px solid rgba(127,119,221,.25)',boxShadow:'0 8px 32px rgba(0,0,0,.8)'},
+    userButtonPopoverActionButton:{color:'#F0EEEC'},
+    userButtonPopoverActionButtonText:{color:'#F0EEEC'},
+    userButtonPopoverFooter:{background:'#080808'}
+  }
+};
+
+/* ── INIT ── */
+window.addEventListener('load',async()=>{
+  setLoad('Loading Clerk…');
+  let attempts=0;
+  while(typeof Clerk==='undefined'&&attempts<30){await new Promise(r=>setTimeout(r,200));attempts++;}
+  if(typeof Clerk==='undefined'){showError('Clerk failed to load.','Check data-clerk-publishable-key.');return;}
+  try{setLoad('Authenticating…');await Clerk.load();}
+  catch(e){showError('Clerk initialization failed.',e.message||String(e));return;}
+
+  async function showDash(user){
+    if(_dashboardPopulated){populateDash(user);return;}
+    setLoad('Loading your profile…');
+    try{await user.reload();}catch(e){}
+    setLoad('Connecting…');
+    try{Clerk.mountUserButton(document.getElementById('clerkBtn'),{appearance:APPEARANCE});}catch(e){}
+    if(!_clerkProfileMounted){try{Clerk.mountUserProfile(document.getElementById('clerkProfile'),{appearance:APPEARANCE});_clerkProfileMounted=true;}catch(e){}}
+    populateDash(user);_dashboardPopulated=true;
+    document.getElementById('topbar').style.display='flex';
+    document.getElementById('shell').style.display='flex';
+    const ls=document.getElementById('loadScreen');ls.classList.add('out');setTimeout(()=>ls.remove(),700);
+    await fetchAnn();startCountdown();
+    logAct(`Signed in · ${user.fullName||user.firstName||'Member'}`);
+  }
+
+  if(Clerk.user){await showDash(Clerk.user);}
+  else{
+    setLoad('Checking session…');
+    await new Promise(r=>setTimeout(r,1000));
+    if(Clerk.user){await showDash(Clerk.user);}
+    else{setLoad('Redirecting…');setTimeout(()=>{window.location.href='https://wearet5s.com';},800);}
+  }
+
+  Clerk.addListener(({user})=>{
+    if(!user){
+      _dashboardPopulated=false;_clerkProfileMounted=false;
+      clearInterval(_annTimer);clearInterval(_noteChannel);
+      window.location.href='https://wearet5s.com';
+    }
+  });
+});
+</script>
+</body>
+</html>
