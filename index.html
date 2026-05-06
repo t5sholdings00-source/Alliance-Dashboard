@@ -719,7 +719,7 @@ function populateDash(user){
   const name=user.fullName||user.firstName||'Member';
   const email=user.primaryEmailAddress?.emailAddress||'—';
   const isAdmin=meta.role==='admin';
-  const tier=parseInt(lsMeta.tier)||parseInt(meta.tier)||4;
+  const tier=parseInt(meta.tier)||parseInt(lsMeta.tier)||4;
   const division=lsMeta.division||'Alliance';
   const role=lsMeta.role||meta.role||'—';
   const joined=user.createdAt?new Date(user.createdAt).toLocaleDateString('en-US',{month:'long',year:'numeric'}):'—';
